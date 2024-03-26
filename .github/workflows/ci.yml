@@ -371,7 +371,6 @@ jobs:
             !:trino-memory,
             !:trino-mongodb,
             !:trino-mysql,
-            !:trino-openlineage,
             !:trino-opensearch,
             !:trino-oracle,
             !:trino-orc,

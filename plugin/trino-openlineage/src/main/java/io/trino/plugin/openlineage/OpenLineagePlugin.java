@@ -20,6 +20,7 @@ import io.trino.spi.eventlistener.EventListenerFactory;
 public class OpenLineagePlugin
         implements Plugin
 {
+    @Override
     public Iterable<EventListenerFactory> getEventListenerFactories()
     {
         EventListenerFactory listenerFactory = new OpenLineageListenerFactory();
