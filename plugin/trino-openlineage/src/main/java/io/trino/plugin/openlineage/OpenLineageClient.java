@@ -49,21 +49,24 @@ public class OpenLineageClient
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
     private final String url;
     private static final ObjectMapper objectMapper = createMapper();
-
-    // @todo make these configurable -----------------------------------------------------------------------------------
-    private final Integer retryCount = 3;
-    private final Duration retryDelay = Duration.valueOf("5s");
-    private final Duration maxDelay = Duration.valueOf("30s");
-    private final double backoffBase = 0.5;
-    // -----------------------------------------------------------------------------------------------------------------
-
+    private Integer retryCount;
+    private Duration retryDelay;
+    private Duration maxDelay;
+    private double backoffBase;
     private final Optional<String> apiKey;
     private static final Logger logger = Logger.get(OpenLineageClient.class);
 
-    public OpenLineageClient(String url, Optional<String> apiKey)
+    public OpenLineageClient(OpenLineageClientConfig clientConfig)
     {
-        this.url = url;
-        this.apiKey = apiKey;
+        this.url = clientConfig.getUrl();
+        this.apiKey = clientConfig.getApiKey();
+
+        this.retryCount = clientConfig.getRetryCount();
+        this.retryDelay = clientConfig.getRetryDelay();
+        this.maxDelay = clientConfig.getMaxDelay();
+        this.backoffBase = clientConfig.getBackoffBase();
+
+        logger.info(clientConfig.toString());
     }
 
     public void emit(OpenLineage.RunEvent runEvent, String queryId)

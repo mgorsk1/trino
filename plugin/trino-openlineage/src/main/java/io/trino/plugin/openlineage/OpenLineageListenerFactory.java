@@ -13,14 +13,17 @@
  */
 package io.trino.plugin.openlineage;
 
+import com.google.inject.Injector;
+import com.google.inject.Scopes;
+import io.airlift.bootstrap.Bootstrap;
+import io.airlift.json.JsonModule;
 import io.airlift.log.Logger;
 import io.trino.spi.eventlistener.EventListener;
 import io.trino.spi.eventlistener.EventListenerFactory;
 
 import java.util.Map;
-import java.util.Optional;
 
-import static java.util.Objects.requireNonNull;
+import static io.airlift.configuration.ConfigBinder.configBinder;
 
 public class OpenLineageListenerFactory
         implements EventListenerFactory
@@ -36,15 +39,19 @@ public class OpenLineageListenerFactory
     @Override
     public EventListener create(Map<String, String> config)
     {
-        String url = requireNonNull(config.get("openlineage.url"));
-        String apiKey = config.get("openlineage.apikey");
-        Boolean trinoMetadataFacetEnabled = Optional.ofNullable(config.get("openlineage.facets.trinoMetadata.enabled")).orElse("true").equalsIgnoreCase("true");
-        Boolean trinoQueryContextFacetEnabled = Optional.ofNullable(config.get("openlineage.facets.trinoQueryContext.enabled")).orElse("true").equalsIgnoreCase("true");
-        Boolean trinoQueryStatisticsFacetEnabled = Optional.ofNullable(config.get("openlineage.facets.trinoQueryStatistics.enabled")).orElse("true").equalsIgnoreCase("true");
-        String namespace = config.get("openlineage.namespace");
+        Bootstrap app = new Bootstrap(
+                        new JsonModule(),
+                        binder -> {
+                            configBinder(binder).bindConfig(OpenLineageListenerConfig.class);
+                            configBinder(binder).bindConfig(OpenLineageClientConfig.class);
+                            binder.bind(OpenLineageListener.class).in(Scopes.SINGLETON);
+                        });
 
-        logger.info("openlineage.url: " + url);
+        Injector injector = app
+                .doNotInitializeLogging()
+                .setRequiredConfigurationProperties(config)
+                .initialize();
 
-        return new OpenLineageListener(url, Optional.ofNullable(namespace), Optional.ofNullable(apiKey), trinoMetadataFacetEnabled, trinoQueryContextFacetEnabled, trinoQueryStatisticsFacetEnabled);
+        return injector.getInstance(OpenLineageListener.class);
     }
 }

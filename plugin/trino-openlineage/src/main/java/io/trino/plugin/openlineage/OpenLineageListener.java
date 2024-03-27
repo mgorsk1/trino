@@ -15,6 +15,7 @@ package io.trino.plugin.openlineage;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
+import com.google.inject.Inject;
 import io.openlineage.client.OpenLineage;
 import io.trino.spi.eventlistener.EventListener;
 import io.trino.spi.eventlistener.OutputColumnMetadata;
@@ -47,13 +48,15 @@ public class OpenLineageListener
     private final Boolean trinoQueryContextFacetEnabled;
     private final Boolean queryStatisticsFacetEnabled;
 
-    public OpenLineageListener(String url, Optional<String> namespace, Optional<String> apiKey, Boolean trinoMetadataFacetEnabled, Boolean trinoQueryContextFacetEnabled, Boolean queryStatisticsFacetEnabled)
+    @Inject
+    public OpenLineageListener(OpenLineageListenerConfig listenerConfig, OpenLineageClientConfig clientConfig)
     {
-        this.client = new OpenLineageClient(url, apiKey);
-        this.namespace = namespace;
-        this.trinoMetadataFacetEnabled = trinoMetadataFacetEnabled;
-        this.trinoQueryContextFacetEnabled = trinoQueryContextFacetEnabled;
-        this.queryStatisticsFacetEnabled = queryStatisticsFacetEnabled;
+        this.client = new OpenLineageClient(clientConfig);
+
+        this.namespace = listenerConfig.getNamespace();
+        this.trinoMetadataFacetEnabled = listenerConfig.isMetadataFacetEnabled();
+        this.trinoQueryContextFacetEnabled = listenerConfig.isQueryContextFacetEnabled();
+        this.queryStatisticsFacetEnabled = listenerConfig.isQueryStatisticsFacetEnabled();
     }
 
     private UUID getQueryId(QueryMetadata queryMetadata)

@@ -186,7 +186,7 @@ class TestHttpEventListener
         server.enqueue(new MockResponse().setResponseCode(200));
 
         EventListener listener = createEventListener(Map.of(
-                "openlineage.url", server.url("/").toString()));
+                "openlineage-event-listener.connect-url", server.url("/").toString()));
 
         listener.queryCompleted(queryCompleteEvent);
 
