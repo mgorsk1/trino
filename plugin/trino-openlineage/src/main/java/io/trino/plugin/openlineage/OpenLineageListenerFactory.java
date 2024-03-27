@@ -17,7 +17,6 @@ import com.google.inject.Injector;
 import com.google.inject.Scopes;
 import io.airlift.bootstrap.Bootstrap;
 import io.airlift.json.JsonModule;
-import io.airlift.log.Logger;
 import io.trino.spi.eventlistener.EventListener;
 import io.trino.spi.eventlistener.EventListenerFactory;
 
@@ -28,8 +27,6 @@ import static io.airlift.configuration.ConfigBinder.configBinder;
 public class OpenLineageListenerFactory
         implements EventListenerFactory
 {
-    private static final Logger logger = Logger.get(OpenLineageListenerFactory.class);
-
     @Override
     public String getName()
     {
