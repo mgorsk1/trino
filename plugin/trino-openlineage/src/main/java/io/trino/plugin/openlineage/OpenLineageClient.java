@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import com.google.inject.Inject;
 import io.airlift.http.client.HttpClient;
 import io.airlift.http.client.Request;
 import io.airlift.http.client.StaticBodyGenerator;
@@ -44,18 +45,20 @@ import static io.airlift.http.client.Request.Builder.preparePost;
 import static io.airlift.http.client.StatusResponseHandler.createStatusResponseHandler;
 
 public class OpenLineageClient
+        implements OpenLineageEmitter
 {
     private final HttpClient client = new JettyHttpClient();
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
     private final String url;
     private static final ObjectMapper objectMapper = createMapper();
-    private Integer retryCount;
-    private Duration retryDelay;
-    private Duration maxDelay;
-    private double backoffBase;
+    private final Integer retryCount;
+    private final Duration retryDelay;
+    private final Duration maxDelay;
+    private final double backoffBase;
     private final Optional<String> apiKey;
     private static final Logger logger = Logger.get(OpenLineageClient.class);
 
+    @Inject
     public OpenLineageClient(OpenLineageClientConfig clientConfig)
     {
         this.url = clientConfig.getUrl();
@@ -66,14 +69,14 @@ public class OpenLineageClient
         this.maxDelay = clientConfig.getMaxDelay();
         this.backoffBase = clientConfig.getBackoffBase();
 
-        logger.info(clientConfig.toString());
+        logger.info(clientConfig.getSink().toString());
     }
 
     public void emit(OpenLineage.RunEvent runEvent, String queryId)
             throws JsonProcessingException
     {
         String json = objectMapper.writeValueAsString(runEvent);
-        logger.info(json);
+        logger.debug(json);
 
         Request.Builder requestBuilder = preparePost()
                 .addHeader(CONTENT_TYPE, JSON_UTF_8.toString())
@@ -191,6 +194,7 @@ public class OpenLineageClient
 
     public void close()
     {
+        executor.shutdown();
         client.close();
     }
 }

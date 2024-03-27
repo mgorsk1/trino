@@ -39,6 +39,7 @@ as an example:
 ```properties
 event-listener.name=openlineage
 openlineage-event-listener.connect-url=<your openlineage api url>
+openlineage-event-listener.connect-sink=API
 openlineage-event-listener.connect-retry-count=3
 openlineage-event-listener.connect-retry-delay=5s
 openlineage-event-listener.connect-backoff-base=0.5
@@ -63,8 +64,9 @@ event-listener.config-files=etc/openlineage-event-listener.properties,...
 :widths: 40, 40, 20
 :header-rows: 1
 
-openlineage-event-listener.connect-api-key=__dummy__
-
+* - openlineage-event-listener.connect-sink
+  - Type of sink to which emit lineage information. Currently only API is supported.
+  - `API`
 
 * - openlineage-event-listener.connect-url
   - The URI that the plugin will POST events to. Needs to be OpenLineage compatible API with /api/v1/lineage endpoint present.
@@ -77,7 +79,7 @@ openlineage-event-listener.connect-api-key=__dummy__
 * - openlineage-event-listener.connect-retry-count
   - The number of retries on server error. A server is considered to be
     in an error state when the response code is 500 or higher
-  - `0`
+  - `3`
 
 * - openlineage-event-listener.connect-retry-delay
   - Duration for which to delay between attempts to send a request

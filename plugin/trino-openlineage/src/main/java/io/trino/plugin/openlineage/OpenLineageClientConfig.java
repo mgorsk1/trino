@@ -23,9 +23,10 @@ import java.util.Optional;
 
 public class OpenLineageClientConfig
 {
+    private OpenLineageSink sink = OpenLineageSink.API;
     private String url;
     private Optional<String> apiKey = Optional.empty();
-    private int retryCount;
+    private int retryCount = 3;
     private Duration retryDelay = Duration.valueOf("1s");
     private double backoffBase = 2.0;
     private Duration maxDelay = Duration.valueOf("1m");
@@ -110,5 +111,18 @@ public class OpenLineageClientConfig
     public Optional<String> getApiKey()
     {
         return apiKey;
+    }
+
+    @ConfigDescription("Type of sink to emit lineage information to.")
+    @Config("openlineage-event-listener.connect-sink")
+    public OpenLineageClientConfig setSink(OpenLineageSink sink)
+    {
+        this.sink = sink;
+        return this;
+    }
+
+    public OpenLineageSink getSink()
+    {
+        return sink;
     }
 }

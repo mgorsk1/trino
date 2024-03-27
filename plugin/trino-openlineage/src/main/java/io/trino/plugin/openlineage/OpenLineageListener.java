@@ -42,7 +42,7 @@ public class OpenLineageListener
         implements EventListener
 {
     private final OpenLineage ol = new OpenLineage(URI.create("https://github.com/trinodb/trino/plugin/trino-openlineage"));
-    private final OpenLineageClient client;
+    private final OpenLineageEmitter client;
     private final Optional<String> namespace;
     private final Boolean trinoMetadataFacetEnabled;
     private final Boolean trinoQueryContextFacetEnabled;
@@ -299,5 +299,11 @@ public class OpenLineageListener
     private String getJobNamespace(QueryContext queryContext)
     {
         return "trino-" + this.namespace.orElse(queryContext.getEnvironment());
+    }
+
+    @Override
+    public void shutdown()
+    {
+        client.close();
     }
 }
