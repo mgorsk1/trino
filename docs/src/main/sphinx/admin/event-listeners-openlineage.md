@@ -64,6 +64,10 @@ event-listener.config-files=etc/openlineage-event-listener.properties,...
 :widths: 40, 40, 20
 :header-rows: 1
 
+* - Property name
+  - Description
+  - Default
+
 * - openlineage-event-listener.connect-sink
   - Type of sink to which emit lineage information. Currently only API is supported.
   - `API`

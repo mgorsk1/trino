@@ -72,6 +72,7 @@ public class OpenLineageClient
         logger.info(clientConfig.getSink().toString());
     }
 
+    @Override
     public void emit(OpenLineage.RunEvent runEvent, String queryId)
             throws JsonProcessingException
     {
@@ -192,6 +193,7 @@ public class OpenLineageClient
         return mapper;
     }
 
+    @Override
     public void close()
     {
         executor.shutdown();
