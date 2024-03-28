@@ -25,7 +25,7 @@ standard for capturing lineage information from variety of system including (but
 You need to perform the following steps:
 
 - Provide an HTTP/S service that accepts POST events with a JSON body and is compatible with OpenLineage API format.
-- Configure `http-event-listener.connect-ingest-url` in the event listener properties file
+- Configure `openlineage-event-listener.connect-url` in the event listener properties file
   with the URI of the OpenLineage API.
 - Detail the events to send in the {ref}`http-event-listener-configuration` section.
 
