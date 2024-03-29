@@ -16,26 +16,38 @@ package io.trino.plugin.openlineage;
 import io.airlift.configuration.Config;
 import io.airlift.configuration.ConfigDescription;
 
-import java.util.Optional;
-
 public class OpenLineageListenerConfig
 {
-    private Optional<String> namespace = Optional.empty();
+    private String trinoHost = "localhost";
+    private Integer trinoPort = 8080;
     private boolean metadataFacetEnabled = true;
     private boolean queryContextFacetEnabled = true;
     private boolean queryStatisticsFacetEnabled = true;
 
-    @ConfigDescription("Namespace used to annotate job facet.")
-    @Config("openlineage-event-listener.namespace")
-    public OpenLineageListenerConfig setNamespace(String namespace)
+    @ConfigDescription("Hostname of trino server. Used for namespace rendering.")
+    @Config("openlineage-event-listener.trino-host")
+    public OpenLineageListenerConfig setTrinoHost(String trinoHost)
     {
-        this.namespace = Optional.ofNullable(namespace);
+        this.trinoHost = trinoHost;
         return this;
     }
 
-    public Optional<String> getNamespace()
+    public String getTrinoHost()
     {
-        return namespace;
+        return trinoHost;
+    }
+
+    @ConfigDescription("Port of trino server. Used for namespace rendering.")
+    @Config("openlineage-event-listener.trino-port")
+    public OpenLineageListenerConfig setTrinoPort(Integer trinoPort)
+    {
+        this.trinoPort = trinoPort;
+        return this;
+    }
+
+    public Integer getTrinoPort()
+    {
+        return trinoPort;
     }
 
     @ConfigDescription("Should metadata facet be added to run facet.")

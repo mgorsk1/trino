@@ -43,7 +43,8 @@ public class OpenLineageListener
 {
     private final OpenLineage ol = new OpenLineage(URI.create("https://github.com/trinodb/trino/plugin/trino-openlineage"));
     private final OpenLineageEmitter client;
-    private final Optional<String> namespace;
+    private final String trinoHost;
+    private final Integer trinoPort;
     private final Boolean trinoMetadataFacetEnabled;
     private final Boolean trinoQueryContextFacetEnabled;
     private final Boolean queryStatisticsFacetEnabled;
@@ -53,7 +54,9 @@ public class OpenLineageListener
     {
         this.client = new OpenLineageClient(clientConfig);
 
-        this.namespace = listenerConfig.getNamespace();
+        this.trinoHost = listenerConfig.getTrinoHost();
+        this.trinoPort = listenerConfig.getTrinoPort();
+
         this.trinoMetadataFacetEnabled = listenerConfig.isMetadataFacetEnabled();
         this.trinoQueryContextFacetEnabled = listenerConfig.isQueryContextFacetEnabled();
         this.queryStatisticsFacetEnabled = listenerConfig.isQueryStatisticsFacetEnabled();
@@ -167,7 +170,7 @@ public class OpenLineageListener
                         .run(ol.newRunBuilder().runId(runID).facets(runFacetsBuilder.build()).build())
                         .job(
                                 ol.newJobBuilder()
-                                        .namespace(getJobNamespace(queryCreatedEvent.getContext()))
+                                        .namespace(getJobNamespace())
                                         .name(queryCreatedEvent.getMetadata().getQueryId())
                                         .facets(
                                                 ol.newJobFacetsBuilder()
@@ -203,7 +206,7 @@ public class OpenLineageListener
                         .run(ol.newRunBuilder().runId(runID).facets(runFacetsBuilder.build()).build())
                         .job(
                                 ol.newJobBuilder()
-                                        .namespace(getJobNamespace(queryCompletedEvent.getContext()))
+                                        .namespace(getJobNamespace())
                                         .name(queryCompletedEvent.getMetadata().getQueryId())
                                         .facets(
                                                 ol.newJobFacetsBuilder()
@@ -296,9 +299,9 @@ public class OpenLineageListener
         }
     }
 
-    private String getJobNamespace(QueryContext queryContext)
+    private String getJobNamespace()
     {
-        return "trino-" + this.namespace.orElse(queryContext.getEnvironment());
+        return "trino://" + this.trinoHost.replaceAll("^http[s]{0,1}://", "") + ":" + this.trinoPort;
     }
 
     @Override

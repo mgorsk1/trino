@@ -12,12 +12,14 @@ standard for capturing lineage information from variety of system including (but
 
 ### Trino Query attributes mapping to OpenLineage attributes:
 
-| Trino                                                                 | OpenLineage         |
-|-----------------------------------------------------------------------|---------------------|
-| UUID(Query Id)                                                        | Run Id              |
-| queryCreatedEvent.getCreateTime() or queryCompletedEvent.getEndTime() | Run Event Time      |
-| Query Id                                                              | Job Facet Name      |
-| QueryContext.getEnvironment() or openlineage-event-listener.namespace | Job Facet Namespace |
+| Trino                                                                                              | OpenLineage         |
+|----------------------------------------------------------------------------------------------------|---------------------|
+| {UUID(Query Id)}                                                                                   | Run Id              |
+| {queryCreatedEvent.getCreateTime()} or {queryCompletedEvent.getEndTime()}                          | Run Event Time      |
+| Query Id                                                                                           | Job Facet Name      |
+| trino:// + {openlineage-event-listener.trino-host} + ":" + {openlineage-event-listener.trino-port} | Job Facet Namespace |
+| {schema}.{table}                                                                                   | Dataset Name        |
+| Trino Catalog                                                                                      | Dataset Namespace   |
 
 (openlineage-event-listener-requirements)=
 ## Requirements
@@ -45,7 +47,8 @@ openlineage-event-listener.connect-retry-delay=5s
 openlineage-event-listener.connect-backoff-base=0.5
 openlineage-event-listener.connect-max-delay=1s
 openlineage-event-listener.connect-api-key=__dummy__
-openlineage-event-listener.namespace=production
+openlineage-event-listener.trino-host=localhost
+openlineage-event-listener.trino-port=8080
 openlineage-event-listener.facets-metadata-enabled=true
 openlineage-event-listener.facets-query-context-enabled=true
 openlineage-event-listener.facets-query-statistics-enabled=true
@@ -102,9 +105,13 @@ event-listener.config-files=etc/openlineage-event-listener.properties,...
     used with exponential backoff.
   - `1m`
 
-* - openlineage-event-listener.namespace
-  - Namespace that will be used to annotate job facet. If not provided, query environment will be used.
-  - `Optional.empty()`
+* - openlineage-event-listener.trino-host
+  - Trino hostname. Will be used to render Job Namespace.
+  - `localhost`
+
+* - openlineage-event-listener.trino-port
+  - Trino port. Will be used to render Job Namespace.
+  - `8080`
 
 * - openlineage-event-listener.facets-metadata-enabled
   - Should Trino Metadata facet be included into run facet.
