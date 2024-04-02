@@ -15,6 +15,10 @@ package io.trino.plugin.openlineage;
 
 import io.airlift.configuration.Config;
 import io.airlift.configuration.ConfigDescription;
+import io.trino.spi.resourcegroups.QueryType;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class OpenLineageListenerConfig
 {
@@ -23,6 +27,8 @@ public class OpenLineageListenerConfig
     private boolean metadataFacetEnabled = true;
     private boolean queryContextFacetEnabled = true;
     private boolean queryStatisticsFacetEnabled = true;
+    private List<QueryType> includeQueryTypes = Arrays.asList(QueryType.DELETE,
+            QueryType.INSERT, QueryType.MERGE, QueryType.UPDATE, QueryType.ALTER_TABLE_EXECUTE);
 
     @ConfigDescription("Hostname of trino server. Used for namespace rendering.")
     @Config("openlineage-event-listener.trino-host")
@@ -87,5 +93,21 @@ public class OpenLineageListenerConfig
     public boolean isQueryStatisticsFacetEnabled()
     {
         return queryStatisticsFacetEnabled;
+    }
+
+    @ConfigDescription("Which query types emitted by Trino should generate OpenLineage events. Other query types will be filtered out.")
+    @Config("openlineage-event-listener.include-query-types")
+    public OpenLineageListenerConfig setIncludeQueryTypes(String includeQueryTypes)
+    {
+        this.includeQueryTypes = Arrays.stream(includeQueryTypes.split(","))
+                .map(String::trim)
+                .map(QueryType::valueOf)
+                .toList();
+        return this;
+    }
+
+    public List<QueryType> getIncludeQueryTypes()
+    {
+        return includeQueryTypes;
     }
 }

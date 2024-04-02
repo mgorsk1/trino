@@ -52,6 +52,7 @@ openlineage-event-listener.trino-port=8080
 openlineage-event-listener.facets-metadata-enabled=true
 openlineage-event-listener.facets-query-context-enabled=true
 openlineage-event-listener.facets-query-statistics-enabled=true
+openlineage-event-listener.include-query-types=DELETE,INSERT,MERGE,UPDATE,ALTER_TABLE_EXECUTE
 ```
 
 And set add `etc/openlineage-event-listener.properties` to `event-listener.config-files`
@@ -124,5 +125,9 @@ event-listener.config-files=etc/openlineage-event-listener.properties,...
 * - openlineage-event-listener.facets-query-statistics-enabled
   - Should Query Statistics facet be included into run facet.
   - `true`
+
+* - openlineage-event-listener.include-query-types
+  - Which types of queries should be taken into account when emitting lineage information. List of values split by comma. Each value must be matching `io.trino.spi.resourcegroups.QueryType` enum. Query types not included here will be filtered out. 
+  - `DELETE,INSERT,MERGE,UPDATE,ALTER_TABLE_EXECUTE`
 
 :::

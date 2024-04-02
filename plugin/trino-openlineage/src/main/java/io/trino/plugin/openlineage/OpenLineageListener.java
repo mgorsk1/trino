@@ -16,6 +16,7 @@ package io.trino.plugin.openlineage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
+import io.airlift.log.Logger;
 import io.openlineage.client.OpenLineage;
 import io.trino.spi.eventlistener.EventListener;
 import io.trino.spi.eventlistener.OutputColumnMetadata;
@@ -26,6 +27,7 @@ import io.trino.spi.eventlistener.QueryIOMetadata;
 import io.trino.spi.eventlistener.QueryMetadata;
 import io.trino.spi.eventlistener.QueryOutputMetadata;
 import io.trino.spi.eventlistener.QueryStatistics;
+import io.trino.spi.resourcegroups.QueryType;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -48,6 +50,9 @@ public class OpenLineageListener
     private final Boolean trinoMetadataFacetEnabled;
     private final Boolean trinoQueryContextFacetEnabled;
     private final Boolean queryStatisticsFacetEnabled;
+    private final List<QueryType> includeQueryTypes;
+
+    private static final Logger logger = Logger.get(OpenLineageListener.class);
 
     @Inject
     public OpenLineageListener(OpenLineageListenerConfig listenerConfig, OpenLineageClientConfig clientConfig)
@@ -60,6 +65,15 @@ public class OpenLineageListener
         this.trinoMetadataFacetEnabled = listenerConfig.isMetadataFacetEnabled();
         this.trinoQueryContextFacetEnabled = listenerConfig.isQueryContextFacetEnabled();
         this.queryStatisticsFacetEnabled = listenerConfig.isQueryStatisticsFacetEnabled();
+
+        this.includeQueryTypes = listenerConfig.getIncludeQueryTypes();
+
+        logger.info("Supported query types" + this.includeQueryTypes);
+    }
+
+    private Boolean queryTypeSupported(QueryContext queryContext)
+    {
+        return this.includeQueryTypes.stream().map(Optional::of).toList().contains(queryContext.getQueryType());
     }
 
     private UUID getQueryId(QueryMetadata queryMetadata)
@@ -70,28 +84,44 @@ public class OpenLineageListener
     @Override
     public void queryCreated(QueryCreatedEvent queryCreatedEvent)
     {
-        UUID runID = getQueryId(queryCreatedEvent.getMetadata());
+        if (queryTypeSupported(queryCreatedEvent.getContext())) {
+            UUID runID = getQueryId(queryCreatedEvent.getMetadata());
 
-        try {
-            OpenLineage.RunEvent event = getStartEvent(runID, queryCreatedEvent);
-            client.emit(event, runID.toString());
+            try {
+                OpenLineage.RunEvent event = getStartEvent(runID, queryCreatedEvent);
+                client.emit(event, runID.toString());
+            }
+            catch (IllegalAccessException | JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
         }
-        catch (IllegalAccessException | JsonProcessingException e) {
-            throw new RuntimeException(e);
+        else {
+            logger.debug("Query type "
+                    + queryCreatedEvent.getContext().getQueryType().toString()
+                    + " not supported. Supported query types: "
+                    + this.includeQueryTypes);
         }
     }
 
     @Override
     public void queryCompleted(QueryCompletedEvent queryCompletedEvent)
     {
-        UUID runID = getQueryId(queryCompletedEvent.getMetadata());
+        if (queryTypeSupported(queryCompletedEvent.getContext())) {
+            UUID runID = getQueryId(queryCompletedEvent.getMetadata());
 
-        try {
-            OpenLineage.RunEvent event = getCompletedEvent(runID, queryCompletedEvent);
-            client.emit(event, runID.toString());
+            try {
+                OpenLineage.RunEvent event = getCompletedEvent(runID, queryCompletedEvent);
+                client.emit(event, runID.toString());
+            }
+            catch (IllegalAccessException | JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
         }
-        catch (IllegalAccessException | JsonProcessingException e) {
-            throw new RuntimeException(e);
+        else {
+            logger.debug("Query type "
+                    + queryCompletedEvent.getContext().getQueryType().toString()
+                    + " not supported. Supported query types: "
+                    + this.includeQueryTypes);
         }
     }
 
